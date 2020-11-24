@@ -148,6 +148,14 @@ final class Factory implements FactoryInterface
         }
     }
 
+    /**
+     * Request web page 
+     * 
+     * @param string $url Desired URL
+     * @param bool $replace Indicates whether the recovered content needs to have the URLs swaped  
+     * @param callable $onSuccess Function to call on recovered page
+     * @param callable $onError Function to call if recovery fails
+    */
     private function requestPage(string $url, bool $replace = false, callable $onSuccess = null, callable $onError = null)
     {
         $this->browser->request(
