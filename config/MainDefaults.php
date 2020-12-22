@@ -24,13 +24,13 @@ class MainDefaults implements MainDefaultsIterface
      * @param bool $verbose - Output more detailed information 
      * @return bool
     */
-    public static function applyDefaults(bool $verbose = false): bool
+    public static function applyDefaults(bool $verbose = false, $configFilePath = __DIR__ . '/main.json'): bool
     {
         if ($verbose)
             echo 'Applying default configuration to config file: ';
 
         $result = \BrunoNatali\Tools\File\JsonFile::saveArray(
-            __DIR__ . '/main.json', 
+            $configFilePath, 
             self::getDefaults(), 
             true,
             JSON_PRETTY_PRINT // 4 Better human visualization or hand edition 
@@ -51,13 +51,13 @@ class MainDefaults implements MainDefaultsIterface
      * @param bool $verbose - Output more detailed information 
      * @return bool
     */
-    public static function updateDefaults(bool $verbose = false)
+    public static function updateDefaults(bool $verbose = false, $configFilePath = __DIR__ . '/main.json')
     {   
         if ($verbose)
             echo 'Updating configuration file: ';
 
         $result = \BrunoNatali\Tools\File\JsonFile::saveArray(
-            __DIR__ . '/main.json', 
+            $configFilePath, 
             self::getDefaults(), 
             false,
             JSON_PRETTY_PRINT // 4 Better human visualization or hand edition 
