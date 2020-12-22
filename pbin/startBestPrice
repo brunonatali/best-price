@@ -2,8 +2,6 @@
 <?php
 require __DIR__ . '/../../../autoload.php';
 
-use BrunoNatali\BestPrice\Factory;
-
 /**
  * Will set config file to be updated
 */
@@ -17,7 +15,7 @@ $verbose = null;
 /**
  * Configuration path and file name
 */
-$configFilePath = __DIR__ . '/../../config/main.json';
+$configFilePath = __DIR__ . '/../../../../config.json';
 
 $continueArgv = false;
 foreach ($argv as $key => $arg) {
@@ -37,14 +35,12 @@ foreach ($argv as $key => $arg) {
 }
 
 if (!\file_exists($configFilePath)) {
-    include_once __DIR__ . '/../config/MainDefaults.php';
-    if (!MainDefaults::applyDefaults(($verbose !== null ? $verbose : false), $configFilePath)) {
+    if (!\BrunoNatali\BestPrice\Config\MainDefaults::applyDefaults(($verbose !== null ? $verbose : false), $configFilePath)) {
         throw new \Exception("Error applying configuration. Check if path '$configFilePath' exists");
         exit(1);
     }
 } else if ($updateConfigFile) {
-    include_once __DIR__ . '/../config/MainDefaults.php';
-    if (!MainDefaults::updateDefaults(($verbose !== null ? $verbose : false), $configFilePath)) {
+    if (!\BrunoNatali\BestPrice\Config\MainDefaults::updateDefaults(($verbose !== null ? $verbose : false), $configFilePath)) {
         throw new \Exception("Error updating configuration. Check if path '$configFilePath' exists");
         exit(1);
     }
@@ -64,6 +60,6 @@ if (isset($config['app'])) {
     }
 }
 
-$service = new Factory($config);
+$service = new \BrunoNatali\BestPrice\Factory($config);
 
 $service->start();

@@ -46,7 +46,7 @@ final class Factory implements FactoryInterface
             "outSystemEnabled" => $this->config['app']['log_debug_enable'] ?? false
         ];
         
-        $this->browser = new \BrunoNatali\Tools\Communication\HttpClient(
+        $this->browser = new HttpClient(
             $this->loop, 
             $this->sysConfig,
             [
@@ -57,6 +57,8 @@ final class Factory implements FactoryInterface
                 'verify_peer' => false
             ]
         );
+
+        $this->outSystem = new OutSystem($config);
     }
 
     /**
@@ -87,7 +89,12 @@ final class Factory implements FactoryInterface
             $this->config['app']['http_server_ip'] : '0.0.0.0');
 
         // Use default HTTP port 80 if not configured
-        $this->config['app']['http_server_port'] = $this->sanitizeCheckPort($this->config['app']['http_server_port'] ?? '80');
+        if (isset($this->config['app']['http_server_port'] )) {
+            if (!\is_int($this->config['app']['http_server_port'] ))
+                $this->config['app']['http_server_port'] = $this->sanitizeCheckPort($this->config['app']['http_server_port']);
+        } else {
+            $this->config['app']['http_server_port'] = 80;
+        }
 
         $this->httpServer = new HttpServer(
             $this->loop,

@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace BrunoNatali\BestPrice;
+namespace BrunoNatali\BestPrice\Config;
 
-interface MainDefaultsIterface extends FactoryInterface
+interface MainDefaultsInterface extends \BrunoNatali\BestPrice\FactoryInterface
 {
     const CONFIG_APP = [
         'app' => [
