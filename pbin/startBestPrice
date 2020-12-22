@@ -4,6 +4,66 @@ require __DIR__ . '/../../../autoload.php';
 
 use BrunoNatali\BestPrice\Factory;
 
-$service = new Factory();
+/**
+ * Will set config file to be updated
+*/
+$updateConfigFile = false;
+
+/**
+ * Tell app to output on CLI
+*/
+$verbose = null;
+
+/**
+ * Configuration path and file name
+*/
+$configFilePath = __DIR__ . '/../../config/main.json';
+
+$continueArgv = false;
+foreach ($argv as $key => $arg) {
+    if ($continueArgv) {
+        $continueArgv = false;
+        continue;
+    }
+
+    if ($arg === '--update-config') {
+        $updateConfigFile = true;
+    } else if ($arg === '--verbose') {
+        $verbose = true;
+    } else if ($arg === '--config-file') {
+        $configFilePath = \trim($argv[$key + 1]);
+        $continueArgv = true;
+    }
+}
+
+if (!\file_exists($configFilePath)) {
+    include_once __DIR__ . '/../config/MainDefaults.php';
+    if (!MainDefaults::applyDefaults(($verbose !== null ? $verbose : false), $configFilePath)) {
+        throw new \Exception("Error applying configuration. Check if path '$configFilePath' exists");
+        exit(1);
+    }
+} else if ($updateConfigFile) {
+    include_once __DIR__ . '/../config/MainDefaults.php';
+    if (!MainDefaults::updateDefaults(($verbose !== null ? $verbose : false), $configFilePath)) {
+        throw new \Exception("Error updating configuration. Check if path '$configFilePath' exists");
+        exit(1);
+    }
+}
+
+$config = \BrunoNatali\Tools\File\JsonFile::readAsArray($configFilePath);
+
+/**
+ * Enable / disabble app output (verbose)
+*/
+if (isset($config['app'])) {
+    if (isset($config['app']['log_debug_enable'])) {
+        if ($verbose !== null)
+            $config['app']['log_debug_enable'] = $verbose;
+    } else if ($verbose !== null) {
+        $config['app']['log_debug_enable'] = $verbose;
+    }
+}
+
+$service = new Factory($config);
 
 $service->start();

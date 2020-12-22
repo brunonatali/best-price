@@ -29,7 +29,7 @@ final class Factory implements FactoryInterface
 
     private $sysConfig = []; // Used to store / transport online configs 
 
-    function __construct()
+    function __construct(array $config = [])
     {
         /**
          * Build loop factory
@@ -39,19 +39,21 @@ final class Factory implements FactoryInterface
         /**
          * Get registered configs
         */
-        $this->config = JsonFile::readAsArray('/etc/desh/config.json');
+        $this->config = $config;
 
         $this->sysConfig = [
-            "outSystemName" => $this->config['app_name'] ?? 'BP', // Best Price
-            "outSystemEnabled" => $this->config['log_debug_enable'] ?? false
+            "outSystemName" => $this->config['app']['app_name'] ?? 'BP', // Best Price
+            "outSystemEnabled" => $this->config['app']['log_debug_enable'] ?? false
         ];
         
         $this->browser = new \BrunoNatali\Tools\Communication\HttpClient(
             $this->loop, 
             $this->sysConfig,
             [
-                'timeout' => (isset($this->config['http_client_timeout']) && \is_int($this->config['http_client_timeout']) ?
-                    $this->config['http_client_timeout'] : self::HTTP_CLIENT_TIME_OUT),
+                'timeout' => (isset($this->config['browser']['http_client_timeout']) && 
+                    \is_int($this->config['browser']['http_client_timeout']) ?
+                        $this->config['browser']['http_client_timeout'] : 
+                        self::HTTP_CLIENT_TIME_OUT),
                 'verify_peer' => false
             ]
         );
@@ -74,29 +76,30 @@ final class Factory implements FactoryInterface
 
 
     /**
-     * Check if provided IPv4 number is right
+     * Start main http server
      * 
-     * @param string $ip 
-     * @return bool
+     * HTTP server is the main means of communication between client`s browser and application
     */
     private function startHttpServer()
     {
         // Get configured http server IP or use default listen for any source IP
-        $this->sysConfig['http_server_ip'] = ($this->sanitizeCheckIpv4($this->config['http_server_ip'] ?? '') ? 
-            $this->config['http_server_ip'] : '0.0.0.0');
+        $this->config['app']['http_server_ip'] = ($this->sanitizeCheckIpv4($this->config['app']['http_server_ip'] ?? '') ? 
+            $this->config['app']['http_server_ip'] : '0.0.0.0');
 
         // Use default HTTP port 80 if not configured
-        $this->sysConfig['http_server_port'] = $this->sanitizeCheckPort($this->config['http_server_port'] ?? '80');
+        $this->config['app']['http_server_port'] = $this->sanitizeCheckPort($this->config['app']['http_server_port'] ?? '80');
 
         $this->httpServer = new HttpServer(
             $this->loop,
             \array_merge(
                 $this->sysConfig,
                 [
-                    'ip' => $this->sysConfig['http_server_ip'], 
-                    'port' => $this->sysConfig['http_server_port'],
+                    'ip' => $this->config['app']['http_server_ip'], 
+                    'port' => $this->config['app']['http_server_port'],
                     'stream' => false,
-                    'cert' => (isset($this->config['http_server_cert']) && @\file_exists($this->config['http_server_cert']) ? 
+                    'cert' => (isset($this->config['http_server_cert']) 
+                        && $this->config['app']['http_server_cert'] != ''
+                        && @\file_exists($this->config['app']['http_server_cert']) ? 
                         $this->config['http_server_cert'] : null),
                     'sequence' => HttpServerInterface::SERVER_HTTP_PROC_ORDER_SQH,
                     'on_server_params' => function ($params) {
@@ -106,7 +109,7 @@ final class Factory implements FactoryInterface
                         */
                         if (isset($this->config['http_server_ip_blacklist']) && !empty($this->config['http_server_ip_blacklist'])) {
                             foreach ($this->config['http_server_ip_blacklist'] as $BlakListIp)
-                                if ($params['REMOTE_ADDR'] ===  $BlakListIp) {
+                                if ($params['REMOTE_ADDR'] === $BlakListIp) {
                                     $this->outSystem->stdout(
                                         'Request from: ' . $params['REMOTE_ADDR'] . ' [BLOCKED] in BLACK LIST', 
                                         OutSystem::LEVEL_WARNING
@@ -251,7 +254,7 @@ final class Factory implements FactoryInterface
             if (($end = \strpos($data, '"', $start +1)) !== false) {
                 
                 $dataClone .= \substr($data, $last, $start - $last) . 'window.location.origin + ":' .
-                    $this->sysConfig['http_server_port'] . '/?proxy=' . \substr($data, ++$start, $end - $start) . '"';
+                    $this->config['app']['http_server_port'] . '/?proxy=' . \substr($data, ++$start, $end - $start) . '"';
                         
                 $replaces ++;
                 $last = $end + 1;
