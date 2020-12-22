@@ -1,5 +1,30 @@
 {
+    "name": "brunonatali/bestprice",
+    "description": "Your own price checking server",
+    "license": "MIT",
+	"authors": [
+	  {
+		"name": "Bruno Natali",
+		"email": "b010010010n@gmail.com"
+	  }
+	],
     "require": {
-        "brunonatali/tools": "^0.5.14"
-    }
+			"php": ">=7.3",
+            "brunonatali/tools": "^0.5.14"
+	},
+	"require-dev": {
+		"phpunit/phpunit": "^9"
+	},
+	"autoload": {
+		"psr-4": {
+			"BrunoNatali\\BestPrice\\": "src"
+		}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"BrunoNatali\\Tests\\BestPrice\\": "tests/"
+		}
+	},
+    "minimum-stability": "dev",
+    "prefer-stable": true
 }
